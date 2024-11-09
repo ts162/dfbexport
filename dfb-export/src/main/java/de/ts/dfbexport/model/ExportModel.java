@@ -26,13 +26,14 @@ public class ExportModel {
 			try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
 				Iterable<CSVRecord> records = CSVFormat.DEFAULT.withDelimiter(';').withFirstRecordAsHeader()
 						.parse(reader);
-				
-	            Map<String, Integer> headerMap = ((CSVParser) records).getHeaderMap();
-	            System.out.println("Gefundene Header: " + headerMap.keySet());
 
+				Map<String, Integer> headerMap = ((CSVParser) records).getHeaderMap();
+				System.out.println("Gefundene Header: " + headerMap.keySet());
 
 				for (CSVRecord record : records) {
-					String name = record.get(headerMap.keySet().stream().filter(h -> h.contains("Name Künstlername") || h.contains("Name")).findFirst().orElse("Name Künstlername"));
+					String name = record.get(headerMap.keySet().stream()
+							.filter(h -> h.contains("Name Künstlername") || h.contains("Name")).findFirst()
+							.orElse("Name Künstlername"));
 					String vorname = record.get("Vorname Rufname");
 					String geburtsdatum = record.get("Geb.");
 					players.add(new DfbPlayerVO(name, vorname, geburtsdatum));
@@ -44,15 +45,35 @@ public class ExportModel {
 
 	}
 
+	private List<DfbPlayerVO> removeDuplicates(List<DfbPlayerVO> players) {
+		List<DfbPlayerVO> uniquePlayers = new ArrayList<>();
+
+		for (DfbPlayerVO dfbPlayerVO : players) {
+			boolean isDuplicate = false;
+			for (DfbPlayerVO uniquePlayer : uniquePlayers) {
+				if (uniquePlayer.equals(dfbPlayerVO)) {
+					isDuplicate = true;
+					break;
+				}
+			}
+
+			if (!isDuplicate) {
+				uniquePlayers.add(dfbPlayerVO);
+			}
+		}
+		return uniquePlayers;
+	}
+
 	public void saveSortedCsv(File outputFile) throws IOException {
-		Collections.sort(players);
+		List<DfbPlayerVO> uniquePlayers = this.removeDuplicates(players);
+		Collections.sort(uniquePlayers);
 
 		try (BufferedWriter writer = Files.newBufferedWriter(outputFile.toPath());
 				CSVPrinter printer = new CSVPrinter(writer,
 						CSVFormat.DEFAULT.withDelimiter(';').withHeader("Name", "Vorname", "Geburtsdatum"))) {
 
 			int previousYear = -1;
-			for (DfbPlayerVO player : players) {
+			for (DfbPlayerVO player : uniquePlayers) {
 				int currentYear = player.getGeburtsdatum().getYear();
 
 				if (previousYear != -1 && previousYear != currentYear) {

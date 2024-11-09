@@ -33,4 +33,9 @@ public class DfbPlayerVO implements Comparable<DfbPlayerVO> {
 	public int compareTo(DfbPlayerVO other) {
 		return this.geburtsdatum.compareTo(other.geburtsdatum);
 	}
+
+	public boolean equals(DfbPlayerVO other) {
+		return other.getName().equals(this.getName()) && other.getGeburtsdatum().equals(this.getGeburtsdatum())
+				&& other.getVorname().equals(this.getVorname());
+	}
 }

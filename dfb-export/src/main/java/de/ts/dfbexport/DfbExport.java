@@ -20,11 +20,9 @@ public class DfbExport {
         frame.setSize(400, 300);
         frame.setLayout(new BorderLayout());
 
-        // Create the View
         DfbExportView view = new DfbExportView();
         frame.add(view.getMainPanel(), BorderLayout.CENTER);
 
-        // Create the Model and Controller
         ExportModel model = new ExportModel();
         new DfbExportController(model, view);
 
